@@ -5,6 +5,8 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,13 +23,21 @@ public class PlayWTanzuGenaiJavacfenvApplication {
 
 }
 
+@Configuration
+class EmbeddingConfig {
+    @Bean
+    EmbeddingModel embeddingModel(List<GenaiLocator> locators) {
+        return locators.getFirst().getFirstAvailableEmbeddingModel();
+    }
+}
+
 @RestController
 class EmbeddingController {
 
     EmbeddingModel embeddingModel;
 
-    EmbeddingController(List<GenaiLocator> locators) {
-        this.embeddingModel = locators.get(0).getFirstAvailableEmbeddingModel();
+    EmbeddingController(EmbeddingModel embeddingModel) {
+        this.embeddingModel = embeddingModel;
     }
 
     @GetMapping("/ai/embedding")
