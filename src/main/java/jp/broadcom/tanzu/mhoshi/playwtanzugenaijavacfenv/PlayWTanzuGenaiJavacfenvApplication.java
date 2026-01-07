@@ -1,6 +1,8 @@
 package jp.broadcom.tanzu.mhoshi.playwtanzugenaijavacfenv;
 
 import io.pivotal.cfenv.boot.genai.GenaiLocator;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.boot.SpringApplication;
@@ -29,6 +31,11 @@ class EmbeddingConfig {
     EmbeddingModel embeddingModel(GenaiLocator locator) {
         return locator.getFirstAvailableEmbeddingModel();
     }
+
+    @Bean
+    ChatModel chatModel(GenaiLocator locator) {
+        return locator.getFirstAvailableChatModel();
+    }
 }
 
 @RestController
@@ -36,13 +43,24 @@ class EmbeddingController {
 
     EmbeddingModel embeddingModel;
 
-    EmbeddingController(EmbeddingModel embeddingModel) {
+    ChatClient chatClient;
+
+    EmbeddingController(EmbeddingModel embeddingModel, ChatModel chatModel) {
         this.embeddingModel = embeddingModel;
+        this.chatClient = ChatClient.create(chatModel);
     }
 
     @GetMapping("/ai/embedding")
     Map embed(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
         EmbeddingResponse embeddingResponse = this.embeddingModel.embedForResponse(List.of(message));
         return Map.of("embedding", embeddingResponse);
+    }
+
+    @GetMapping("/ai")
+    String generation(String userInput) {
+        return this.chatClient.prompt()
+                .user(userInput)
+                .call()
+                .content();
     }
 }
