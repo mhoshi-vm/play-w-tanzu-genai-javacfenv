@@ -26,8 +26,8 @@ public class PlayWTanzuGenaiJavacfenvApplication {
 @Configuration
 class EmbeddingConfig {
     @Bean
-    EmbeddingModel embeddingModel(List<GenaiLocator> locators) {
-        return locators.getFirst().getFirstAvailableEmbeddingModel();
+    EmbeddingModel embeddingModel(GenaiLocator locator) {
+        return locator.getFirstAvailableEmbeddingModel();
     }
 }
 
